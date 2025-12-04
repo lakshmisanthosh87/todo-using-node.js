@@ -19,7 +19,7 @@ function addTodo() {
     fetch("/api/todos", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text })
+        body: JSON.stringify({ text, completed: false })  // we add completed
     })
     .then(res => res.json())
     .then(todo => {
@@ -30,8 +30,45 @@ function addTodo() {
 
 function addToDOM(todo) {
     const li = document.createElement("li");
-    li.innerHTML = `${todo.text} <button onclick="deleteTodo('${todo.id}')">X</button>`;
+
+    // create checkbox
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.checked = todo.completed;
+
+    // apply line-through if completed
+    if (todo.completed) {
+        li.style.textDecoration = "line-through";
+    }
+
+    checkbox.onclick = () => toggleComplete(todo.id, checkbox.checked, li);
+
+    // text
+    const span = document.createElement("span");
+    span.textContent = todo.text;
+
+    // delete button
+    const del = document.createElement("button");
+    del.textContent = "Delete";
+    del.onclick = () => deleteTodo(todo.id);
+
+    li.appendChild(checkbox);
+    li.appendChild(span);
+    li.appendChild(del);
+
     list.appendChild(li);
+}
+
+function toggleComplete(id, isDone, li) {
+    // update UI immediately
+    li.style.textDecoration = isDone ? "line-through" : "none";
+
+    // update backend
+    fetch(`/api/todos/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ completed: isDone })
+    });
 }
 
 function deleteTodo(id) {

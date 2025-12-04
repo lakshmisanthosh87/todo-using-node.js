@@ -24,6 +24,11 @@ module.exports = (req, res) => {
     if (method === "POST" && url === "/api/todos") {
         return controllers.addTodo(req, res);
     }
+    
+    if (method === "PUT" && url.startsWith("/api/todos/")) {
+    const id = url.split("/")[3];
+    return controllers.updateTodo(req, res, id);
+}
 
     if (method === "DELETE" && url.startsWith("/api/todos/")) {
         const id = url.split("/")[3];

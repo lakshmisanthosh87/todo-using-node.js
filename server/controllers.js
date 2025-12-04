@@ -16,12 +16,14 @@ function saveTodos(todos) {
 
 module.exports = {
 
+    // --- GET all todos ---
     getTodos(req, res) {
         const todos = readTodos();
         res.writeHead(200, { "Content-Type": "application/json" });
         res.end(JSON.stringify(todos));
     },
 
+    // --- ADD new todo ---
     addTodo(req, res) {
         let body = "";
 
@@ -33,7 +35,8 @@ module.exports = {
 
             const newTodo = {
                 id: Date.now().toString(),
-                text
+                text,
+                completed: false   // default value
             };
 
             todos.push(newTodo);
@@ -44,6 +47,32 @@ module.exports = {
         });
     },
 
+    // --- UPDATE todo completed status ---
+    updateTodo(req, res, id) {
+        let body = "";
+
+        req.on("data", chunk => body += chunk);
+
+        req.on("end", () => {
+            const { completed } = JSON.parse(body);
+
+            const todos = readTodos();
+            const index = todos.findIndex(t => t.id === id);
+
+            if (index === -1) {
+                res.writeHead(404);
+                return res.end("Todo not found");
+            }
+
+            todos[index].completed = completed;
+            saveTodos(todos);
+
+            res.writeHead(200, { "Content-Type": "application/json" });
+            res.end(JSON.stringify(todos[index]));
+        });
+    },
+
+    // --- DELETE todo ---
     deleteTodo(req, res, id) {
         let todos = readTodos();
         todos = todos.filter(t => t.id !== id);
