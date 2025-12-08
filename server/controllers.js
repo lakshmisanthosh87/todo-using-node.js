@@ -1,82 +1,64 @@
-const fs = require("fs");
-const path = require("path");
-
-const storagePath = path.join(__dirname, "storage.json");
-
-// Read all todos
-function readTodos() {
-    if (!fs.existsSync(storagePath)) return [];
-    return JSON.parse(fs.readFileSync(storagePath));
-}
-
-// Save todos
-function saveTodos(todos) {
-    fs.writeFileSync(storagePath, JSON.stringify(todos, null, 2));
-}
+const connectDB = require("./db");
+const { ObjectId } = require("mongodb");
 
 module.exports = {
 
-    // --- GET all todos ---
-    getTodos(req, res) {
-        const todos = readTodos();
+    async getTodos(req, res) {
+        const db = await connectDB();
+        const todos = await db.collection("todos").find().toArray();
+
         res.writeHead(200, { "Content-Type": "application/json" });
         res.end(JSON.stringify(todos));
     },
 
-    // --- ADD new todo ---
-    addTodo(req, res) {
+    async addTodo(req, res) {
         let body = "";
 
         req.on("data", chunk => body += chunk);
 
-        req.on("end", () => {
+        req.on("end", async () => {
             const { text } = JSON.parse(body);
-            const todos = readTodos();
+            const db = await connectDB();
 
-            const newTodo = {
-                id: Date.now().toString(),
-                text,
-                completed: false   // default value
-            };
+            const newTodo = { text, completed: false };
+            const result = await db.collection("todos").insertOne(newTodo);
 
-            todos.push(newTodo);
-            saveTodos(todos);
+            newTodo._id = result.insertedId;
 
             res.writeHead(201, { "Content-Type": "application/json" });
             res.end(JSON.stringify(newTodo));
         });
     },
 
-    // --- UPDATE todo completed status ---
-    updateTodo(req, res, id) {
+    async updateTodo(req, res, id) {
         let body = "";
 
         req.on("data", chunk => body += chunk);
 
-        req.on("end", () => {
+        req.on("end", async () => {
             const { completed } = JSON.parse(body);
+            const db = await connectDB();
 
-            const todos = readTodos();
-            const index = todos.findIndex(t => t.id === id);
+            const result = await db.collection("todos").findOneAndUpdate(
+                { _id: new ObjectId(id) },
+                { $set: { completed } },
+                { returnDocument: "after" }
+            );
 
-            if (index === -1) {
+            if (!result.value) {
                 res.writeHead(404);
                 return res.end("Todo not found");
             }
 
-            todos[index].completed = completed;
-            saveTodos(todos);
-
             res.writeHead(200, { "Content-Type": "application/json" });
-            res.end(JSON.stringify(todos[index]));
+            res.end(JSON.stringify(result.value));
         });
     },
 
-    // --- DELETE todo ---
-    deleteTodo(req, res, id) {
-        let todos = readTodos();
-        todos = todos.filter(t => t.id !== id);
-        saveTodos(todos);
+    async deleteTodo(req, res, id) {
+        const db = await connectDB();
+
+        await db.collection("todos").deleteOne({ _id: new ObjectId(id) });
 
         res.writeHead(200);
         res.end("Deleted");
