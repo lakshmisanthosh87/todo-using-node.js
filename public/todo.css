@@ -16,6 +16,14 @@ button {
 
 ul {
     margin-top: 20px;
+    
+    list-style: none;
+    padding: 0;
+}
+
+.todo-text.completed {
+    text-decoration: line-through;
+    color: gray;
 }
 
 li {

@@ -31,23 +31,22 @@ function addTodo() {
 function addToDOM(todo) {
     const li = document.createElement("li");
 
-    // checkbox
     const checkbox = document.createElement("input");
     checkbox.type = "checkbox";
     checkbox.checked = todo.completed;
 
+    // Todo text span
+    const span = document.createElement("span");
+    span.className = "todo-text";
+    span.textContent = todo.text;
+
     if (todo.completed) {
-        li.style.textDecoration = "line-through";
+        span.classList.add("completed");
     }
 
     checkbox.onclick = () =>
-        toggleComplete(todo._id, checkbox.checked, li);
+        toggleComplete(todo._id, checkbox.checked, span);
 
-    // text
-    const span = document.createElement("span");
-    span.textContent = todo.text;
-
-    // delete button
     const del = document.createElement("button");
     del.textContent = "Delete";
     del.onclick = () => deleteTodo(todo._id);
@@ -59,8 +58,8 @@ function addToDOM(todo) {
     list.appendChild(li);
 }
 
-function toggleComplete(id, isDone, li) {
-    li.style.textDecoration = isDone ? "line-through" : "none";
+function toggleComplete(id, isDone, span) {
+    span.classList.toggle("completed", isDone);
 
     fetch(`/api/todos/${id}`, {
         method: "PUT",
