@@ -1,0 +1,26 @@
+{
+  "name": "todo-using-node",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server/app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+     "start": "nodemon server/app.js",
+     "dev":"nodemon server/app.js"
+},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lakshmisanthosh87/todo-using-node.js.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/lakshmisanthosh87/todo-using-node.js/issues"
+  },
+  "homepage": "https://github.com/lakshmisanthosh87/todo-using-node.js#readme",
+  "dependencies": {
+    "mongodb": "^7.0.0"
+  }
+}
